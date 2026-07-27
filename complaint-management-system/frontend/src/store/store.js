@@ -8,5 +8,3 @@ export const store = configureStore({
     chat: chatReducer,
   },
 });
-
-export default store;
