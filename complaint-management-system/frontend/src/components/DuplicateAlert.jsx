@@ -1,21 +1,29 @@
 import { useSelector } from "react-redux";
+import { Copy } from "lucide-react";
 
 export default function DuplicateAlert() {
-  const { isDuplicate, duplicates } = useSelector((state) => state.complaint);
+  const { duplicates } = useSelector((s) => s.complaint);
 
-  if (!isDuplicate || !duplicates?.length) return null;
+  if (!duplicates || !duplicates.has_duplicates) return null;
 
   return (
-    <div className="panel alert alert--info">
-      <strong>Possible duplicate complaints found:</strong>
-      <ul>
-        {duplicates.map((match) => (
-          <li key={match.complaint_id}>
-            Complaint #{match.complaint_id} — {Math.round(match.similarity_score * 100)}% similar
-            {match.matched_on?.length > 0 && ` (matched on: ${match.matched_on.join(", ")})`}
-          </li>
-        ))}
-      </ul>
+    <div className="alert alert-info">
+      <Copy size={16} />
+      <div>
+        <span>
+          Possible duplicate{duplicates.matches.length > 1 ? "s" : ""} detected —
+          review before saving:
+        </span>
+        <div className="duplicate-matches-list">
+          {duplicates.matches.map((m) => (
+            <div key={m.complaint_id} className="duplicate-match-row">
+              <span className="duplicate-id">{m.complaint_id}</span>
+              <span className="duplicate-score">{Math.round(m.similarity_score * 100)}% match</span>
+              <span className="duplicate-matched-on">{m.matched_on.join(", ").replace(/_/g, " ")}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

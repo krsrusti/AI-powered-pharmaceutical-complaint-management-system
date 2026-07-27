@@ -8,8 +8,8 @@ form is never edited directly.
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database import get_db, load_complaint, list_complaints, get_audit_log
-from schemas import Complaint
+from database import get_db, load_complaint, list_complaints, get_audit_log, save_complaint
+from schemas import Complaint, ComplaintStatus, REQUIRED_FIELDS
 
 router = APIRouter(prefix="/complaints", tags=["complaints"])
 
@@ -44,3 +44,27 @@ def get_complaint_audit_log(complaint_id: str, db: Session = Depends(get_db)):
         }
         for e in entries
     ]
+
+
+@router.patch("/{complaint_id}/submit", response_model=Complaint)
+def submit_complaint(complaint_id: str, db: Session = Depends(get_db)) -> Complaint:
+    """Backs the mockup's 'Save Complaint' button. Every AI turn already
+    persists the complaint automatically (see routers_chat.py) — this
+    endpoint is specifically for the deliberate user action of moving a
+    complaint out of DRAFT, after confirming all required fields are present.
+    Refuses to submit an incomplete complaint rather than silently allowing
+    a half-filled record to be finalized."""
+    complaint = load_complaint(db, complaint_id)
+    if complaint is None:
+        raise HTTPException(status_code=404, detail=f"Complaint '{complaint_id}' not found")
+
+    missing = [f for f in REQUIRED_FIELDS if not getattr(complaint, f, None)]
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot save — missing required fields: {', '.join(missing).replace('_', ' ')}",
+        )
+
+    complaint.status = ComplaintStatus.SUBMITTED
+    save_complaint(db, complaint)
+    return complaint

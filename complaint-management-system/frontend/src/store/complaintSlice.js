@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { sendChatMessage, uploadDocument, fetchComplaint } from "../api";
+import { sendChatMessage, uploadDocument, fetchComplaint, submitComplaint } from "../api";
 
 /**
  * This slice mirrors the backend's ChatResponse shape almost exactly —
@@ -49,6 +49,17 @@ export const loadComplaint = createAsyncThunk(
   async (complaintId, { rejectWithValue }) => {
     try {
       return await fetchComplaint(complaintId);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const submitComplaintThunk = createAsyncThunk(
+  "complaint/submit",
+  async (complaintId, { rejectWithValue }) => {
+    try {
+      return await submitComplaint(complaintId);
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -105,6 +116,20 @@ const complaintSlice = createSlice({
       .addCase(loadComplaint.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || "Failed to load complaint.";
+      })
+
+      // --- submitComplaintThunk ---
+      .addCase(submitComplaintThunk.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(submitComplaintThunk.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.complaint = action.payload;
+      })
+      .addCase(submitComplaintThunk.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || "Failed to save complaint.";
       });
   },
 });

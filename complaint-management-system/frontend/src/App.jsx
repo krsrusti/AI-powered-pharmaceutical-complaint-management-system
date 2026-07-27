@@ -1,31 +1,21 @@
-import { Provider } from "react-redux";
-import store from "./store/store";
-import ChatPanel from "./components/ChatPanel";
 import ComplaintForm from "./components/ComplaintForm";
+import ChatPanel from "./components/ChatPanel";
 import RiskPanel from "./components/RiskPanel";
 import CompletenessAlert from "./components/CompletenessAlert";
 import DuplicateAlert from "./components/DuplicateAlert";
 
-function AppContent() {
+export default function App() {
   return (
-    <div className="app-layout">
-      <div className="app-column">
-        <ChatPanel />
-      </div>
-      <div className="app-column">
+    <div className="app-shell">
+      <div className="panel panel-left">
         <CompletenessAlert />
         <DuplicateAlert />
         <ComplaintForm />
         <RiskPanel />
       </div>
+      <div className="panel panel-right">
+        <ChatPanel />
+      </div>
     </div>
-  );
-}
-
-export default function App() {
-  return (
-    <Provider store={store}>
-      <AppContent />
-    </Provider>
   );
 }

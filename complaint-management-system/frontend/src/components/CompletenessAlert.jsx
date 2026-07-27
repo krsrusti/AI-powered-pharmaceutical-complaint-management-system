@@ -1,30 +1,35 @@
 import { useSelector } from "react-redux";
+import { ClipboardCheck, ClipboardList } from "lucide-react";
 
 export default function CompletenessAlert() {
-  const { isComplete, completenessScore, missingFields } = useSelector(
-    (state) => state.complaint
-  );
+  const { completeness } = useSelector((s) => s.complaint);
 
-  if (completenessScore === null) return null;
+  if (!completeness) return null;
 
-  if (isComplete) {
+  if (completeness.is_complete) {
     return (
-      <div className="panel alert alert--success">
-        <strong>Complete.</strong> All required information has been provided.
+      <div className="alert alert-success">
+        <ClipboardCheck size={16} />
+        <span>All required fields are present — ready to save.</span>
       </div>
     );
   }
 
   return (
-    <div className="panel alert alert--warning">
-      <strong>Missing information</strong> ({Math.round((completenessScore || 0) * 100)}% complete)
-      {missingFields?.length > 0 && (
-        <ul>
-          {missingFields.map((field, i) => (
-            <li key={i}>{field}</li>
-          ))}
-        </ul>
-      )}
+    <div className="alert alert-warning">
+      <ClipboardList size={16} />
+      <div>
+        <span>{completeness.message || "Some required fields are still missing."}</span>
+        {completeness.missing_fields?.length > 0 && (
+          <div className="missing-fields-list">
+            {completeness.missing_fields.map((f) => (
+              <span key={f} className="missing-field-tag">
+                {f.replace(/_/g, " ")}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

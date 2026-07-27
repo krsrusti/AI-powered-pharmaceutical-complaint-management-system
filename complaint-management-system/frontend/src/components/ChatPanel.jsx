@@ -1,54 +1,29 @@
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { sendChatMessage } from "../api";
-import { addMessage, setSending, setSessionId } from "../store/chatSlice";
-import {
-  setCompleteness,
-  setDuplicates,
-  setRiskAssessment,
-  updateComplaintFields,
-} from "../store/complaintSlice";
+import { useState, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Sparkles, UploadCloud, FileText, Send, Loader2 } from "lucide-react";
+import { sendMessage, uploadFile } from "../store/complaintSlice";
+import { addUserMessage } from "../store/chatSlice";
 
-function ensureSessionId(sessionId, dispatch) {
-  if (sessionId) return sessionId;
-  const newId = crypto.randomUUID();
-  dispatch(setSessionId(newId));
-  return newId;
-}
+const SUPPORTED_FORMATS = "PDF, DOCX, TXT, EML";
+const MAX_FILE_SIZE_MB = 10;
 
 export default function ChatPanel() {
   const dispatch = useDispatch();
-  const { sessionId, messages, isSending } = useSelector((state) => state.chat);
-  const complaintId = useSelector((state) => state.complaint.current?.id ?? null);
-  const [draft, setDraft] = useState("");
+  const { complaintId } = useSelector((s) => s.complaint);
+  const { messages, isThinking, isUploading, uploadStatusMessage } = useSelector((s) => s.chat);
 
-  const handleSend = async () => {
-    const text = draft.trim();
-    if (!text || isSending) return;
+  const [inputText, setInputText] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
-    const activeSessionId = ensureSessionId(sessionId, dispatch);
-    dispatch(addMessage({ role: "user", content: text }));
-    setDraft("");
-    dispatch(setSending(true));
+  const handleSend = () => {
+    const trimmed = inputText.trim();
+    if (!trimmed || isThinking) return;
 
-    try {
-      const { data } = await sendChatMessage(activeSessionId, text, complaintId);
-      dispatch(addMessage({ role: "assistant", content: data.reply }));
-
-      if (data.completeness_check) dispatch(setCompleteness(data.completeness_check));
-      if (data.duplicate_check) dispatch(setDuplicates(data.duplicate_check));
-      if (data.risk_assessment) dispatch(setRiskAssessment(data.risk_assessment));
-      if (data.updated_complaint) dispatch(updateComplaintFields(data.updated_complaint));
-    } catch (err) {
-      dispatch(
-        addMessage({
-          role: "assistant",
-          content: "Sorry, something went wrong sending that message.",
-        })
-      );
-    } finally {
-      dispatch(setSending(false));
-    }
+    dispatch(addUserMessage(trimmed));
+    dispatch(sendMessage({ complaintId, message: trimmed }));
+    setInputText("");
   };
 
   const handleKeyDown = (e) => {
@@ -58,29 +33,139 @@ export default function ChatPanel() {
     }
   };
 
+  const handleFileSelected = (file) => {
+    if (!file) return;
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      dispatch(addUserMessage(`Attempted to upload ${file.name} (exceeds ${MAX_FILE_SIZE_MB}MB limit)`));
+      return;
+    }
+    dispatch(addUserMessage(`Uploaded document: ${file.name}`));
+    dispatch(uploadFile({ complaintId, file }));
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    handleFileSelected(file);
+  };
+
+  const busy = isThinking || isUploading;
+
   return (
-    <div className="panel chat-panel">
-      <h2>File a Complaint</h2>
+    <div className="chat-panel">
+      <div className="chat-header">
+        <div className="chat-header-title">
+          <Sparkles size={18} />
+          <h2>AI Complaint Intake Assistant</h2>
+        </div>
+        <span className="beta-badge">BETA</span>
+      </div>
+
+      <div
+        className={`dropzone ${isDragging ? "dropzone-active" : ""}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <UploadCloud size={22} />
+        <p>
+          Drag &amp; drop complaint document here <br />
+          or <span className="link-text">click to browse</span>
+        </p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.eml,.txt,.png,.jpg,.jpeg,.webp,.bmp"
+          hidden
+          onChange={(e) => handleFileSelected(e.target.files?.[0])}
+        />
+      </div>
+
+      <div className="divider-with-text">
+        <span>OR</span>
+      </div>
+
+      <button
+        className="paste-text-btn"
+        onClick={() => document.getElementById("chat-textarea")?.focus()}
+      >
+        <FileText size={16} />
+        Paste Complaint Text / Email
+      </button>
+
+      <div className="format-info">
+        Supported formats: {SUPPORTED_FORMATS}
+        <br />
+        Max file size: {MAX_FILE_SIZE_MB}MB
+      </div>
+
+      {isUploading && uploadStatusMessage && (
+        <div className="extraction-progress">
+          <div className="progress-label">
+            <span>EXTRACTION PROGRESS</span>
+          </div>
+          <div className="progress-bar">
+            <div className="progress-bar-fill" />
+          </div>
+          <p className="progress-status">{uploadStatusMessage}</p>
+        </div>
+      )}
+
       <div className="chat-messages">
-        {messages.map((m, i) => (
-          <div key={i} className={`chat-message chat-message--${m.role}`}>
-            {m.content}
+        <div className="ai-assistant-label">AI ASSISTANT</div>
+
+        {messages.length === 0 && (
+          <div className="chat-bubble chat-bubble-ai">
+            <Sparkles size={16} />
+            <p>
+              Upload a complaint document or paste text above. I will automatically
+              extract the details and populate the form for you.
+            </p>
+          </div>
+        )}
+
+        {messages.map((m) => (
+          <div
+            key={m.id}
+            className={`chat-bubble ${m.role === "ai" ? "chat-bubble-ai" : "chat-bubble-user"} ${
+              m.isError ? "chat-bubble-error" : ""
+            }`}
+          >
+            {m.role === "ai" && <Sparkles size={16} />}
+            <p>{m.text}</p>
           </div>
         ))}
-        {isSending && <div className="chat-message chat-message--assistant">Typing…</div>}
+
+        {isThinking && !isUploading && (
+          <div className="chat-bubble chat-bubble-ai chat-bubble-thinking">
+            <Loader2 size={16} className="spin" />
+            <p>Thinking...</p>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
       </div>
+
       <div className="chat-input-row">
         <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          id="chat-textarea"
+          placeholder="Ask me anything about this complaint..."
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Describe your complaint..."
-          rows={3}
+          rows={1}
+          disabled={busy}
         />
-        <button onClick={handleSend} disabled={isSending || !draft.trim()}>
-          Send
+        <button className="send-btn" onClick={handleSend} disabled={busy || !inputText.trim()}>
+          <Send size={16} />
         </button>
       </div>
+      <p className="disclaimer">AI responses may contain errors. Please verify information.</p>
     </div>
   );
 }
