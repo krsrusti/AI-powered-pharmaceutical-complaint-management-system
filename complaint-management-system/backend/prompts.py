@@ -115,6 +115,11 @@ HIGH risk if ANY of:
 - Complaint involves an injectable, ophthalmic, or other high-risk route of administration
 - Any indication of actual or potential patient harm (adverse event language)
 - Mislabeling that could cause a dosing or drug-identity error
+- Product identity mix-up: the product name changed in a way that indicates the
+  complaint is actually about a DIFFERENT drug/product than previously recorded
+  (not a spelling/typo correction of the same product). A patient receiving the
+  wrong product is a critical safety event in itself, regardless of what the
+  original complaint described — always HIGH risk if this is the case.
 
 MEDIUM risk if ANY of (and none of the HIGH criteria apply):
 - Visual/cosmetic defect with no direct ingestion/injection safety concern (e.g. tablet chipping, discoloration without contamination indication)
@@ -125,6 +130,13 @@ LOW risk if ALL of:
 - Non-safety-related issue (e.g. packaging aesthetics, delivery/shipping complaint unrelated to product quality)
 - No plausible patient impact
 - No indication of a batch-wide or trend issue
+
+NOTE on product_name edits specifically: distinguish between (a) a spelling/
+formatting correction of the SAME product — not risk-relevant on its own — and
+(b) the complaint turning out to concern a DIFFERENT product entirely — this is
+the product identity mix-up HIGH-risk criterion above, even if no other detail
+changed. When in doubt about which case applies, treat it as case (b) and
+re-assess rather than silently keeping the prior risk level.
 """
 
 RISK_SYSTEM_PROMPT = f"""You are a pharmaceutical quality risk assessor. Given a
@@ -141,6 +153,14 @@ For your response, provide each of the following as its own field:
 - patient_impact: 1 sentence on possible impact to patient safety
 - investigation_priority: "immediate" | "standard" | "low" with 1 short reason
 - reasoning_summary: 1-2 sentences tying it together
+- suggested_actions: 2-4 SHORT possible investigation/corrective action
+  CATEGORIES the QA team could consider next (e.g. "Retest retained batch
+  samples", "Review equipment calibration logs", "Check for similar
+  complaints on this batch", "Audit raw material supplier records"). These
+  are generic starting points for a human investigator, NOT a diagnosis of
+  root cause and NOT a specific fix — do not claim to know the actual cause.
+  If the complaint is too vague to suggest anything meaningful, return an
+  empty list rather than guessing.
 
 Respond with ONLY this JSON structure:
 {{
@@ -149,7 +169,8 @@ Respond with ONLY this JSON structure:
   "product_impact": "...",
   "patient_impact": "...",
   "investigation_priority": "...",
-  "reasoning_summary": "..."
+  "reasoning_summary": "...",
+  "suggested_actions": ["...", "..."]
 }}
 """
 
@@ -180,6 +201,14 @@ If the edited field(s) DO affect rubric criteria (e.g. quantity increased,
 description changed to indicate contamination), re-assess and explain what
 changed and why.
 
+Also provide suggested_actions: 2-4 SHORT possible investigation/corrective
+action CATEGORIES the QA team could consider next (e.g. "Retest retained
+batch samples", "Review equipment calibration logs", "Check for similar
+complaints on this batch"). These are generic starting points for a human
+investigator, NOT a diagnosis of root cause and NOT a specific fix. If
+risk_changed is false, you may keep the previous suggested_actions as-is
+or return an empty list if none were previously given.
+
 Respond with ONLY this JSON structure:
 {{
   "risk_changed": true | false,
@@ -188,7 +217,8 @@ Respond with ONLY this JSON structure:
   "product_impact": "...",
   "patient_impact": "...",
   "investigation_priority": "...",
-  "reasoning_summary": "..."
+  "reasoning_summary": "...",
+  "suggested_actions": ["...", "..."]
 }}
 """
 

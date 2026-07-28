@@ -320,6 +320,39 @@ body {
   color: var(--color-text-secondary);
 }
 
+.suggested-actions {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.suggested-actions-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.suggested-actions-list {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+.suggested-actions-disclaimer {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
 /* ---------------------------------------------------------------------
    Alerts (completeness / duplicate)
    --------------------------------------------------------------------- */

@@ -22,7 +22,7 @@ const STATUS_COLORS = {
 
 function Field({ label, value, unit, isTextarea }) {
   const displayValue = value || "";
-  const placeholder = "Awaiting AI extraction...";
+  const placeholder = "upload or type in AI Complaint Assistant";
 
   return (
     <div className="field">

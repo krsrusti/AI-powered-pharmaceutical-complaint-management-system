@@ -71,6 +71,7 @@ class RiskAssessment(BaseModel):
     investigation_priority: Optional[str] = None
     reasoning_summary: Optional[str] = None
     rubric_criteria_matched: List[str] = Field(default_factory=list)
+    suggested_actions: List[str] = Field(default_factory=list)  # possible next-step categories, not a diagnosis
     last_updated: Optional[datetime] = None
     changed_this_turn: bool = False   # True only if this turn's edit actually altered risk
 

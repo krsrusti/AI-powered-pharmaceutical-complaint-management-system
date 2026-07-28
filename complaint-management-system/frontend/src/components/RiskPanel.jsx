@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { AlertTriangle, ShieldCheck, ShieldAlert, Shield, RefreshCw } from "lucide-react";
+import { AlertTriangle, ShieldCheck, ShieldAlert, Shield, RefreshCw, ListChecks } from "lucide-react";
 
 const RISK_CONFIG = {
   high: { color: "#DC2626", bg: "#FEF2F2", border: "#FECACA", icon: ShieldAlert, label: "High Risk" },
@@ -67,6 +67,24 @@ export default function RiskPanel() {
               {criterion}
             </span>
           ))}
+        </div>
+      )}
+
+      {risk?.suggested_actions && risk.suggested_actions.length > 0 && (
+        <div className="suggested-actions">
+          <div className="suggested-actions-header">
+            <ListChecks size={14} />
+            <span>Possible Next Steps to Consider</span>
+          </div>
+          <ul className="suggested-actions-list">
+            {risk.suggested_actions.map((action, i) => (
+              <li key={i}>{action}</li>
+            ))}
+          </ul>
+          <p className="suggested-actions-disclaimer">
+            AI-generated starting points for investigation — not a root-cause diagnosis
+            or a confirmed fix. A QA reviewer should verify before acting.
+          </p>
         </div>
       )}
     </div>

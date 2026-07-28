@@ -269,6 +269,7 @@ def risk_assessment_node(state: GraphState) -> dict:
         investigation_priority=llm_result.get("investigation_priority"),
         reasoning_summary=llm_result.get("reasoning_summary"),
         rubric_criteria_matched=llm_result.get("rubric_criteria_matched", []),
+        suggested_actions=llm_result.get("suggested_actions", []),
         last_updated=datetime.utcnow(),
         changed_this_turn=risk_changed,
     )
