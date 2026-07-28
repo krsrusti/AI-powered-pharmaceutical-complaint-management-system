@@ -108,3 +108,5 @@ requests to the backend.
   between PostgreSQL and MySQL only requires changing `DATABASE_URL`.
 - Model names are configurable via environment variables (`GROQ_FAST_MODEL`,
   `GROQ_REASONING_MODEL`) without code changes.
+
+python -m uvicorn app.main:app --reload

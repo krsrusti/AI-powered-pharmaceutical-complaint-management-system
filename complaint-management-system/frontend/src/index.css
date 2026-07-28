@@ -677,3 +677,138 @@ body {
   text-align: center;
   margin: 10px 0 0;
 }
+
+/* ---------------------------------------------------------------------
+   Top navigation
+   --------------------------------------------------------------------- */
+.top-nav {
+  display: flex;
+  gap: 6px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px 0;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.nav-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.nav-tab-active {
+  background: var(--color-panel);
+  color: var(--color-accent);
+  border-color: var(--color-border);
+  border-bottom-color: var(--color-panel);
+}
+
+.app-shell-single {
+  grid-template-columns: 1fr;
+}
+
+/* ---------------------------------------------------------------------
+   Complaint list
+   --------------------------------------------------------------------- */
+.complaint-list {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.complaint-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.complaint-list-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.complaint-list-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.complaint-list-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.complaint-list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  background: #FAFAFA;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+}
+
+.complaint-list-row:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.complaint-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.complaint-row-id {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.complaint-row-product {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.complaint-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.risk-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-badge-sm {
+  font-size: 11px;
+  padding: 3px 9px;
+}

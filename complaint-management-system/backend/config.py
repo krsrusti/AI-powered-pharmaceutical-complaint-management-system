@@ -2,9 +2,14 @@
 Centralized app settings, loaded from environment variables (.env).
 
 Groq model choice rationale:
-  - GROQ_MODEL_FAST (gemma2-9b-it): used for extraction and completeness
+  - GROQ_MODEL_FAST (llama-3.1-8b-instant): used for extraction and completeness
     checks — high volume, latency-sensitive calls where a smaller model is
     sufficient since the task is closer to structured parsing than deep reasoning.
+    NOTE: the assignment brief specified gemma2-9b-it, but Groq deprecated that
+    model on Aug 8, 2025 in favor of llama-3.1-8b-instant (same speed class,
+    better price-performance — see https://console.groq.com/docs/deprecations).
+    Swapped for that reason; documented here and in README.md as an adaptation
+    to a spec written before the deprecation.
   - GROQ_MODEL_REASONING (llama-3.3-70b-versatile): used specifically for risk
     assessment, where the quality of reasoning (why a risk level was assigned)
     matters more than speed, and the task benefits from a larger model.
@@ -21,7 +26,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # --- Groq LLM ---
     GROQ_API_KEY: str = "your-groq-api-key-here"
-    GROQ_MODEL_FAST: str = "gemma2-9b-it"
+    GROQ_MODEL_FAST: str = "llama-3.1-8b-instant"
     GROQ_MODEL_REASONING: str = "llama-3.3-70b-versatile"
     GROQ_API_BASE_URL: str = "https://api.groq.com/openai/v1"
     LLM_MAX_RETRIES: int = 2
